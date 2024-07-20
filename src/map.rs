@@ -6,6 +6,8 @@
 //! [`BTreeMap`]: https://doc.rust-lang.org/std/collections/struct.BTreeMap.html
 //! [`IndexMap`]: https://docs.rs/indexmap/*/indexmap/map/struct.IndexMap.html
 
+use iex::iex;
+
 use crate::value::Value;
 use alloc::string::String;
 #[cfg(feature = "preserve_order")]
@@ -473,6 +475,7 @@ impl serde::ser::Serialize for Map<String, Value> {
 
 impl<'de> de::Deserialize<'de> for Map<String, Value> {
     #[inline]
+    #[iex]
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: de::Deserializer<'de>,
@@ -487,6 +490,7 @@ impl<'de> de::Deserialize<'de> for Map<String, Value> {
             }
 
             #[inline]
+            #[iex]
             fn visit_unit<E>(self) -> Result<Self::Value, E>
             where
                 E: de::Error,
@@ -496,13 +500,14 @@ impl<'de> de::Deserialize<'de> for Map<String, Value> {
 
             #[cfg(any(feature = "std", feature = "alloc"))]
             #[inline]
+            #[iex]
             fn visit_map<V>(self, mut visitor: V) -> Result<Self::Value, V::Error>
             where
                 V: de::MapAccess<'de>,
             {
                 let mut values = Map::new();
 
-                while let Some((key, value)) = tri!(visitor.next_entry()) {
+                while let Some((key, value)) = visitor.next_entry()? {
                     values.insert(key, value);
                 }
 

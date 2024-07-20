@@ -1,3 +1,5 @@
+use iex::iex;
+
 use crate::de::ParserNumber;
 use crate::error::Error;
 #[cfg(feature = "arbitrary_precision")]
@@ -396,6 +398,7 @@ impl Serialize for Number {
 
 impl<'de> Deserialize<'de> for Number {
     #[inline]
+    #[iex]
     fn deserialize<D>(deserializer: D) -> Result<Number, D::Error>
     where
         D: Deserializer<'de>,
@@ -410,16 +413,19 @@ impl<'de> Deserialize<'de> for Number {
             }
 
             #[inline]
+            #[iex]
             fn visit_i64<E>(self, value: i64) -> Result<Number, E> {
                 Ok(value.into())
             }
 
             #[inline]
+            #[iex]
             fn visit_u64<E>(self, value: u64) -> Result<Number, E> {
                 Ok(value.into())
             }
 
             #[inline]
+            #[iex]
             fn visit_f64<E>(self, value: f64) -> Result<Number, E>
             where
                 E: de::Error,
@@ -429,6 +435,7 @@ impl<'de> Deserialize<'de> for Number {
 
             #[cfg(feature = "arbitrary_precision")]
             #[inline]
+            #[iex]
             fn visit_map<V>(self, mut visitor: V) -> Result<Number, V::Error>
             where
                 V: de::MapAccess<'de>,
@@ -451,6 +458,7 @@ struct NumberKey;
 
 #[cfg(feature = "arbitrary_precision")]
 impl<'de> de::Deserialize<'de> for NumberKey {
+    #[iex]
     fn deserialize<D>(deserializer: D) -> Result<NumberKey, D::Error>
     where
         D: de::Deserializer<'de>,
@@ -464,6 +472,7 @@ impl<'de> de::Deserialize<'de> for NumberKey {
                 formatter.write_str("a valid number field")
             }
 
+            #[iex]
             fn visit_str<E>(self, s: &str) -> Result<(), E>
             where
                 E: de::Error,
@@ -488,6 +497,7 @@ pub struct NumberFromString {
 
 #[cfg(feature = "arbitrary_precision")]
 impl<'de> de::Deserialize<'de> for NumberFromString {
+    #[iex]
     fn deserialize<D>(deserializer: D) -> Result<NumberFromString, D::Error>
     where
         D: de::Deserializer<'de>,
@@ -501,6 +511,7 @@ impl<'de> de::Deserialize<'de> for NumberFromString {
                 formatter.write_str("string containing a number")
             }
 
+            #[iex]
             fn visit_str<E>(self, s: &str) -> Result<NumberFromString, E>
             where
                 E: de::Error,
@@ -523,19 +534,21 @@ macro_rules! deserialize_any {
     (@expand [$($num_string:tt)*]) => {
         #[cfg(not(feature = "arbitrary_precision"))]
         #[inline]
+        #[iex]
         fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Error>
         where
             V: Visitor<'de>,
         {
             match self.n {
-                N::PosInt(u) => visitor.visit_u64(u),
-                N::NegInt(i) => visitor.visit_i64(i),
-                N::Float(f) => visitor.visit_f64(f),
+                N::PosInt(u) => Ok(visitor.visit_u64(u)?),
+                N::NegInt(i) => Ok(visitor.visit_i64(i)?),
+                N::Float(f) => Ok(visitor.visit_f64(f)?),
             }
         }
 
         #[cfg(feature = "arbitrary_precision")]
         #[inline]
+        #[iex]
         fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Error>
             where V: Visitor<'de>
         {
@@ -567,6 +580,7 @@ macro_rules! deserialize_any {
 macro_rules! deserialize_number {
     ($deserialize:ident => $visit:ident) => {
         #[cfg(not(feature = "arbitrary_precision"))]
+        #[iex]
         fn $deserialize<V>(self, visitor: V) -> Result<V::Value, Error>
         where
             V: Visitor<'de>,
@@ -575,6 +589,7 @@ macro_rules! deserialize_number {
         }
 
         #[cfg(feature = "arbitrary_precision")]
+        #[iex]
         fn $deserialize<V>(self, visitor: V) -> Result<V::Value, Error>
         where
             V: de::Visitor<'de>,
@@ -643,6 +658,7 @@ pub(crate) struct NumberDeserializer {
 impl<'de> MapAccess<'de> for NumberDeserializer {
     type Error = Error;
 
+    #[iex]
     fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>, Error>
     where
         K: de::DeserializeSeed<'de>,
@@ -653,6 +669,7 @@ impl<'de> MapAccess<'de> for NumberDeserializer {
         seed.deserialize(NumberFieldDeserializer).map(Some)
     }
 
+    #[iex]
     fn next_value_seed<V>(&mut self, seed: V) -> Result<V::Value, Error>
     where
         V: de::DeserializeSeed<'de>,
@@ -668,6 +685,7 @@ struct NumberFieldDeserializer;
 impl<'de> Deserializer<'de> for NumberFieldDeserializer {
     type Error = Error;
 
+    #[iex]
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Error>
     where
         V: de::Visitor<'de>,

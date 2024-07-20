@@ -90,6 +90,8 @@
 //! [from_slice]: crate::de::from_slice
 //! [from_reader]: crate::de::from_reader
 
+use iex::iex;
+
 use crate::error::Error;
 use crate::io;
 use alloc::string::String;
@@ -1001,6 +1003,7 @@ where
 /// is wrong with the data, for example required struct fields are missing from
 /// the JSON map or some number is too big to fit in the expected primitive
 /// type.
+#[iex]
 pub fn from_value<T>(value: Value) -> Result<T, Error>
 where
     T: DeserializeOwned,
